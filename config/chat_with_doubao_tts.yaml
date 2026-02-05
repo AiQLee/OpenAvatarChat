@@ -1,0 +1,72 @@
+# 使用豆包(火山引擎)TTS的配置
+# 需要在火山引擎控制台获取 appid 和 access_token
+# 控制台地址: https://console.volcengine.com/speech/service/8
+
+default:
+  logger:
+    log_level: "DEBUG"
+  service:
+    host: "0.0.0.0"
+    port: 8286
+    cert_file: "ssl_certs/localhost.crt"
+    cert_key: "ssl_certs/localhost.key"
+  chat_engine:
+    model_root: "models"
+    concurrent_limit: 1
+    handler_search_path:
+      - "src/handlers"
+    handler_configs:
+      RtcClient:
+        module: client/rtc_client/client_handler_rtc
+        connection_ttl: 900
+      SileroVad:
+        module: vad/silerovad/vad_handler_silero
+        speaking_threshold: 0.5
+        start_delay: 2048
+        end_delay: 5000
+        buffer_look_back: 5000
+        speech_padding: 512
+      SenseVoice:
+        enabled: True
+        module: asr/sensevoice/asr_handler_sensevoice
+        model_name: "iic/SenseVoiceSmall"
+      # 使用豆包TTS替代Edge TTS - V3 API
+      Doubao_TTS:
+        enabled: True
+        module: tts/doubao/tts_handler_doubao
+        # ============ 火山引擎凭证 (V3 API) ============
+        # appid: 从环境变量 DOUBAO_APPID 读取
+        # access_token: 从环境变量 DOUBAO_ACCESS_TOKEN 读取
+        resource_id: "volc.service_type.10029"  # 大模型语音合成资源ID
+        # ============ 音色设置 ============
+        # 豆包语音合成模型2.0 音色列表:
+        # - zh_female_cancan_mars_bigtts: 灿灿大模型音色 (推荐)
+        # - zh_male_M392_conversation_wvae_bigtts: 男声对话音色
+        # - zh_female_M347_emotion_wvae_bigtts: 女声情感音色
+        # 更多音色请参考: https://www.volcengine.com/docs/6561/1257544
+        voice_type: "zh_female_cancan_mars_bigtts"
+        speed_ratio: 1.0  # 语速 0.5-2.0
+        volume_ratio: 1.0  # 音量 0.5-2.0
+        pitch_ratio: 1.0  # 音调 0.5-2.0
+        encoding: "mp3"  # 音频格式: pcm, mp3, wav
+        sample_rate: 24000
+      LLMOpenAICompatible:
+        enabled: True
+        module: llm/openai_compatible/llm_handler_openai_compatible
+        model_name: "gemini-3-flash-preview"
+        enable_video_input: True
+        video_analysis_interval: 10.0
+        video_analysis_prompt: "请用一两句话简短描述你现在看到的画面。"
+        history_length: 20
+        system_prompt: "请你扮演一个AI Youtuber，用简短而有趣的语言来解说看到的事物，并在对话内容中加入合适的标点符号，每句话尽量控制在20字以内。"
+        api_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
+        # api_key: 从环境变量 GEMINI_API_KEY 读取
+      LiteAvatar:
+        enabled: True
+        module: avatar/liteavatar/avatar_handler_liteavatar
+        avatar_name: 20250408/sample_data
+        fps: 25
+        debug: false
+        enable_fast_mode: false
+        use_gpu: true
+        render_video: false  # 禁用视频渲染，只传递音频

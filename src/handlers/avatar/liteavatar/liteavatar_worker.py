@@ -35,6 +35,7 @@ class Tts2FaceConfigModel(HandlerBaseConfigModel, BaseModel):
     enable_fast_mode: bool = Field(default=False)
     use_gpu: bool = Field(default=True)
     stop_ack_timeout: float = Field(default=5.0)
+    render_video: bool = Field(default=True, description="Enable video rendering. Set to False to only pass through audio.")
 
 
 class Tts2FaceEvent(Enum):

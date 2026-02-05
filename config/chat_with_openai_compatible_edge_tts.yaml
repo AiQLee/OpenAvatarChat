@@ -1,9 +1,9 @@
 default:
   logger:
-    log_level: "INFO"
+    log_level: "DEBUG"
   service:
     host: "0.0.0.0"
-    port: 8282
+    port: 8285
     cert_file: "ssl_certs/localhost.crt"
     cert_key: "ssl_certs/localhost.key"
   chat_engine:
@@ -34,19 +34,20 @@ default:
       LLMOpenAICompatible:
         enabled: True
         module: llm/openai_compatible/llm_handler_openai_compatible
-        model_name: "qwen-plus"
-        enable_video_input: False # ensure your llm support video input
+        model_name: "gemini-3-flash-preview"
+        enable_video_input: True  # 启用视频输入
+        video_analysis_interval: 10.0  # 每10秒自动分析一次画面
+        video_analysis_prompt: "请用一两句话简短描述你现在看到的画面。"
         history_length: 20
-        # model_name: "gemini-2.0-flash"
-        system_prompt: "请你扮演一个 AI 助手，用简短的两三句对话来回答用户的问题，并在对话内容中加入合适的标点符号，不需要讨论标点符号相关的内容"
-        api_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
-        # api_url: 'http://127.0.0.1:11434/v1' # ollama
-        # api_url: 'https://generativelanguage.googleapis.com/v1beta/openai/'
-        # api_key: "" # default=os.getenv("DASHSCOPE_API_KEY")
+        system_prompt: "请你扮演一个AI Youtuber，用简短而有趣的语言来解说看到的事物，并在对话内容中加入合适的标点符号，每句话尽量控制在20字以内。对话请全程使用日语。"
+        api_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
+        # api_key: 默认从环境变量 GEMINI_API_KEY 读取
       LiteAvatar:
+        enabled: True
         module: avatar/liteavatar/avatar_handler_liteavatar
         avatar_name: 20250408/sample_data
         fps: 25
         debug: false
         enable_fast_mode: false
         use_gpu: true
+        render_video: false  # 禁用视频渲染，只传递音频

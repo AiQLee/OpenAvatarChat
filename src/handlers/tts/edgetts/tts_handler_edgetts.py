@@ -126,7 +126,7 @@ class HandlerTTS(HandlerBase, ABC):
                     if len(sentence.strip()) < 1:
                         continue
                     logger.info('current sentence' + sentence)
-                    
+
                     communicate = edge_tts.Communicate(sentence, self.voice)
                     data = b''
 
@@ -134,13 +134,15 @@ class HandlerTTS(HandlerBase, ABC):
                         if chunk['type'] == 'audio':
                             # tts_audio = chunk['data']
                             data += chunk['data']
-                    
+
                     output_audio = librosa.load(io.BytesIO(data), sr=None)[0]
+                    logger.info(f'[TTS] Generated audio shape: {output_audio.shape}, dtype: {output_audio.dtype}')
                     output_audio = output_audio[np.newaxis, ...]
                     output = DataBundle(output_definition)
                     output.set_main_data(output_audio)
                     output.add_meta("avatar_speech_end", False)
                     output.add_meta("speech_id", speech_id)
+                    logger.info(f'[TTS] Submitting audio data for sentence')
                     context.submit_data(output)
         else:
             logger.info('last sentence' + context.input_text)

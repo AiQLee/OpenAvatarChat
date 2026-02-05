@@ -46,13 +46,51 @@ class VideoUtils:
 
 
 class ImageUtils:
-    
+
     @staticmethod
     def format_image(image: Union[str, np.ndarray]):
         if isinstance(image, np.ndarray):
             return ImageUtils.numpy2base64(image)
         return image
-    
+
+    @staticmethod
+    def numpy2thumbnail(video_frame, max_size=150, format="JPEG"):
+        """将 NumPy 数组转换为缩略图的 Base64 编码
+        Args:
+            video_frame: numpy数组格式的图片
+            max_size: 缩略图最大尺寸（宽或高）
+            format: 图片格式
+        Returns:
+            Base64 编码的缩略图 data URL
+        """
+        # 将 NumPy 数组转换为 PIL 图像对象
+        image = PIL.Image.fromarray(np.squeeze(video_frame)[..., ::-1])
+
+        # 计算缩略图尺寸，保持宽高比
+        width, height = image.size
+        if width > height:
+            new_width = max_size
+            new_height = int(height * max_size / width)
+        else:
+            new_height = max_size
+            new_width = int(width * max_size / height)
+
+        # 生成缩略图
+        thumbnail = image.resize((new_width, new_height), PIL.Image.Resampling.LANCZOS)
+
+        # 创建一个内存缓冲区
+        buffered = BytesIO()
+
+        # 将缩略图保存到内存缓冲区中，使用较低质量以减小大小
+        thumbnail.save(buffered, format=format, quality=60)
+
+        # 获取二进制数据并编码为 Base64
+        base64_image = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+        # 添加 Base64 数据头
+        data_url = f"data:image/{format.lower()};base64,{base64_image}"
+        return data_url
+
     # 注意rgb顺序
     @staticmethod
     def numpy2base64(video_frame, format="JPEG"):

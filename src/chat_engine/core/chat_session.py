@@ -279,12 +279,17 @@ class ChatSession:
         data_sink = outputs.get(source_key, None)
         if data_sink is not None:
             data_sink.sink_queue.put_nowait(data)
+            logger.debug(f"[distribute_data] Direct output: {data.source} -> {data.type} to output queue")
         sink_list = sinks.get(data.type, [])
+        logger.debug(f"[distribute_data] {data.source} -> {data.type}, sinks: {[s.owner for s in sink_list]}")
         for sink in sink_list:
             if sink.owner == data.source:
+                logger.debug(f"[distribute_data] Skip self: {sink.owner}")
                 continue
             sink.sink_queue.put_nowait(data)
+            logger.debug(f"[distribute_data] Sent to {sink.owner}, consume_mode: {sink.consume_info.input_consume_mode}")
             if sink.consume_info.input_consume_mode == ChatDataConsumeMode.ONCE:
+                logger.debug(f"[distribute_data] ONCE mode, breaking")
                 break
 
     @classmethod
@@ -324,6 +329,7 @@ class ChatSession:
                 )
                 if chat_data is None:
                     continue
+                logger.info(f"[handler_pumper] {handler_env.handler_info.name} produced {chat_data.type}")
                 cls.distribute_data(chat_data, sinks, outputs)
 
     def prepare_handler(self, handler: HandlerBase, handler_info: HandlerBaseInfo,

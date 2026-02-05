@@ -13,6 +13,8 @@ from chat_engine.data_models.session_info_data import SessionInfoData, IOQueueTy
 class SharedStates:
     active: bool = False
     enable_vad: bool = True
+    debug_log_callback: callable = None  # 用于发送调试日志到前端的回调函数
+    trigger_immediate_analysis: bool = False  # 触发立即视频分析（如切换到屏幕共享时）
 
 
 class SessionContext(object):
